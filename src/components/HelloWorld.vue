@@ -2,7 +2,11 @@
   <div class="hello">
     <!--<h1>{{ msg }}</h1>-->
     <!--<h2>Essential Links</h2>-->
+    <div class="span"> {{ universeSize }} out of {{ formattedData.length }} records selected</div>
     <div class="row">
+      <div v-if="!rawTree" class="col-md-7" style="height: 650px">
+        <h3>Content Sections</h3>
+      </div>
       <div v-if="rawTree" class="col-md-7">
         <h3>Content Sections</h3>
         <tree-map :treeData="rawTree" v-on:cellClicked="cellClicked"></tree-map>
@@ -45,10 +49,10 @@ export default {
     bootstrap_table: BootstrapTable
   },
   computed: {
-    barData() {
-      console.log(this.$store.getters)
-      return this.$store.getters.treeData
-    }
+//    barData() {
+//      console.log(this.$store.getters)
+//      return this.$store.getters.treeData
+//    }
   },
   data () {
     return {
@@ -69,8 +73,10 @@ export default {
       barQuery: null,
       selectedBar: null,
       tableHeaders: null,
+      formattedData: [],
       tableData: null,
-      uData: fileData.contentData
+      uData: fileData.contentData,
+      universeSize: null
     }
   },
   mounted () {
@@ -81,20 +87,16 @@ export default {
       monthsAgo: d => this.monthsAgo(d.contentCreated)
     }
 
-//    d3.json("http://127.0.0.1:8000/content_api/", function (error, rawData) {
     let rawData = this.uData
-    me.$store.dispatch('createUniverse', {
-      data: rawData
-    })
     let index = 0
-    let formattedData = rawData.data.data.map(f => {
+    this.formattedData = rawData.data.data.map(f => {
       f.pageviews = f['# of Pageviews']
       f.createdDate = me.parseDate(f.contentCreated)
       f.sessions = f['Unique Sessions']
       f.browsers = f['Unique Browsers']
       return f
     })
-    universe(formattedData, {
+    universe(this.formattedData, {
       generatedColumns: generatedColumns
     })
       .then(function(myUniverse){
@@ -141,7 +143,6 @@ export default {
             })
           })
 
-        // main data list
 
         me.barQuery = myUniverse
         return myUniverse
@@ -153,9 +154,7 @@ export default {
           let g = dim.top(100)
           me.tableData = g
           me.tableHeaders = ['url', 'pageviews', 'contentAuthor', 'contentSection', 'contentCreated', 'browsers']
-//            list.each(render);
-          // console.log(universe.cf.size())
-//            d3.select('#total').text(universe.cf.size())
+          me.universeSize = myUniverse.cf.size()
         })
     })
 
@@ -266,9 +265,7 @@ export default {
               me.tableHeaders = ['url', 'pageviews', 'contentAuthor', 'contentSection', 'contentCreated', 'browsers']
               console.log(me.tableData)
               console.log(me.tableHeaders)
-  //              list.each(render);
-  //              // console.log(universe.cf.size())
-  //              d3.select('#total').text(universe.cf.size())
+              me.universeSize = dim.top(Infinity).length
             })
 
       })
