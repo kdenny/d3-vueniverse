@@ -39,7 +39,6 @@ export const formatTree = function (treeData) {
 }
 
 export const formatUniverseData = function (data) {
-  console.log(data.data.data.data)
 
   return data.data.data.data.map(f => {
     f.pageviews = f['# of Pageviews']
