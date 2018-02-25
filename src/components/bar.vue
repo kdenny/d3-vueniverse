@@ -139,9 +139,9 @@ export default {
   }
 }
 </script>
-<style scoped>
+<style>
   .bar {
-    fill: gray;
+    fill: black;
   }
   .bar:hover {
     cursor: pointer;

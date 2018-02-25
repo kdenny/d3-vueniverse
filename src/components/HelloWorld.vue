@@ -2,7 +2,7 @@
   <div class="hello">
     <!--<h1>{{ msg }}</h1>-->
     <!--<h2>Essential Links</h2>-->
-    <div class="span"> {{ universeSize }} out of {{ formattedData.length }} records selected</div>
+    <div class="span" style="font-size: 18px; font-weight: bold;"> {{ universeSize }} out of {{ formattedData.length }} records selected</div>
     <div class="row">
       <div v-if="!rawTree" class="col-md-7" style="height: 650px">
         <h3>Content Sections</h3>
@@ -21,7 +21,7 @@
                    style="display: block; position: absolute; background-color: wheat; z-index: 2; margin-top: 75px; margin-left: 75px;"/>
       </div>
     </div>
-    <div class="row" v-if="tableData">
+    <div class="row" v-if="tableData" style="max-width: 80vw; margin-left: 8vw;">
       <bootstrap_table
         :tableFields="tableHeaders"
         :tableRows="tableData"
@@ -291,4 +291,6 @@ li {
 a {
   color: #42b983;
 }
+
+
 </style>

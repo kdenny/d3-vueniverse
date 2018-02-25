@@ -43,16 +43,19 @@ export default {
         '#a6cca7',
         '#ccba8f',
         '#e3e2b9',
-        '#bbc49a']
+        '#bbc49a'],
+      selected: null
     }
   },
   props: ['treeData'],
   watch: {
     treeData(newTree) {
-      this.clearChart()
-      this.etl()
-      this.renderChart()
-      this.renderChart()
+      if (!this.selected) {
+        this.clearChart()
+        this.etl()
+        this.renderChart()
+        this.renderChart()
+      }
     }
   },
   mounted () {
@@ -99,13 +102,13 @@ export default {
         .data(this.root.leaves())
         .enter().append("g")
         .on("click", function (d) {
-          if (d3.select(this).attr("class") !== 'active') {
-            d3.select(this).attr("class","active")
-            me.cellClicked(d)
+          if (d3.select(this).attr("class") !== 'leaf active' || !(d3.select(this).attr("class"))) {
+            d3.select(this).attr("class","leaf active")
+            me.cellClicked(d, this)
             d3.select(this).selectAll("text").attr("class","text")
           }
           else {
-            d3.select(this).attr("class","not")
+            d3.select(this).attr("class","leaf not")
             me.cellClicked(d)
             d3.select(this).selectAll("text").attr("class","text")
           }
@@ -116,6 +119,7 @@ export default {
         .attr("id", function(d) { return d.data.id; })
         .attr("width", function(d) { return d.x1 - d.x0; })
         .attr("height", function(d) { return d.y1 - d.y0; })
+        .attr("class", "leaf not")
         .attr("fill", function(d) {
           return d.data.color;
         });
@@ -187,8 +191,12 @@ export default {
     sumBySize (d) {
       return d.count
     },
-    cellClicked (d) {
+    cellClicked (d, obh) {
       console.log(d)
+      console.log(obh)
+      this.selected = d
+//      d.attr("class","active")
+      d3.select(obh).attr("class","leaf active")
       this.$emit('cellClicked', d.data)
     },
     changed (sum) {
@@ -226,6 +234,10 @@ path {
 .text {
   stroke-width: 0.25;
   stroke: black;
+}
+
+.leaf {
+  cursor: pointer;
 }
 
 </style>
