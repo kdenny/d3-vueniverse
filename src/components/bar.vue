@@ -25,6 +25,7 @@ import * as d3 from 'd3'
 export default {
   mounted: function() {
     var el = d3.select(this.$el).select("#svg");
+    console.log(this.chartData)
 
 //    this.height = +el.attr('height');
 //    this.width = +el.attr('width');
@@ -32,12 +33,6 @@ export default {
     this.chartWidth = this.width - this.margin.left - this.margin.right;
     this.chartHeight = this.height - this.margin.top - this.margin.bottom;
 
-//    this.x = d3.scale.ordinal()
-//      .domain(["Z-Index: Total Offers", "Z-Index: Offer Index", "Z-Index: Conversion Index", "Z-Index: Total Conversions"])
-//      .range([25, 275, 525, 750]);
-
-//    this.x = d3.scale.ordinal().rangeRoundBands([0, this.chartWidth], .05);
-//    this.y = d3.scale.linear().range([this.chartHeight, 0]);
 
     this.x = d3.scaleBand().rangeRound([0, this.chartWidth], 5)
 
@@ -46,14 +41,6 @@ export default {
     this.xAxis = d3.axisBottom(this.x);
     this.yAxis = d3.axisLeft(this.y);
 
-//    this.xAxis = d3.svg.axis()
-//      .scale(this.x)
-//      .orient("bottom");
-
-//    this.yAxis = d3.svg.axis()
-//      .scale(this.y)
-//      .orient("left")
-//      .ticks(10);
 
     this.svg = el
       .attr("width", this.width)
@@ -73,17 +60,19 @@ export default {
       this.clearChart()
 //      this.etl()
 //      this.renderChart()
-      this.drawChart()
+//      this.drawChart()
     }
   },
-  props: ['width', 'height', 'margin', 'apiLoc', 'xVar', 'yVar', 'chartData', 'selectedBar'],
+  props: ['width', 'height', 'margin', 'apiLoc', 'xVar', 'xScale', 'yVar', 'chartData', 'selectedBar'],
   methods: {
     drawChart: function(data) {
 
       var me = this;
 
       me.y.domain([0, d3.max(me.chartData, function(d) { return d[me.yVar]; })]);
-      me.x.domain(['1 mo', '2 mo', '3-6 mo', '6-12 mo', '1 yr', '2 yr', '> 3 yr'])
+//      me.x.domain(['1 mo', '2 mo', '3-6 mo', '6-12 mo', '1 yr', '2 yr', '> 3 yr'])
+      me.x.domain(me.xScale)
+
 //      me.x.domain(me.chartData.map(function(d) { return d[me.xVar]; }));
 
 
