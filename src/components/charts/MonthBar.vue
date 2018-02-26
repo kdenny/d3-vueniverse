@@ -39,7 +39,7 @@ export default {
     this.y = d3.scaleLinear().range([this.chartHeight, 0])
 
     this.xAxis = d3.axisBottom(this.x);
-    this.yAxis = d3.axisLeft(this.y);
+    this.yAxis = d3.axisLeft(this.y).ticks(6);
 
 
     this.svg = el
@@ -84,6 +84,7 @@ export default {
         .call(me.xAxis)
         .selectAll("text")
         .style("text-anchor", "end")
+        .attr("class","axis-text")
         .attr("dx", "-.8em")
         .attr("dy", "-.55em")
         .attr("transform", "rotate(-90)" );
@@ -93,6 +94,7 @@ export default {
         .call(me.yAxis)
         .append("text")
         .attr("transform", "rotate(-90)")
+        .attr("class","axis-text")
         .attr("y", -50)
         .attr("x", -me.chartHeight/2)
         .attr("dy", ".71em")
@@ -150,5 +152,8 @@ export default {
 
   .active {
     fill: orange;
+  }
+  .axis-text {
+    font-size: 12pt;
   }
 </style>

@@ -98,19 +98,16 @@
   import * as universe from 'universe'
   import * as moment from 'moment'
 
-  import TreeMap from './TreeMap.vue'
-  import BarChart from './bar.vue'
+  import TreeMap from './charts/TreeMap.vue'
   import MonthBar from './charts/MonthBar.vue'
   import PublisherUsageBar from './charts/PublisherUsageBar.vue'
-  import BootstrapTable from './BootstrapTable.vue'
+  import BootstrapTable from './charts/BootstrapTable.vue'
   import ScaleChart from './charts/ScaleChart.vue'
-  import * as fileData from './out.js'
   import * as featureData from './fake_data.js'
 export default {
   name: 'HelloWorld',
   components: {
     TreeMap,
-    bar_chart: BarChart,
     month_bar: MonthBar,
     publisher_usage: PublisherUsageBar,
     bootstrap_table: BootstrapTable,
@@ -121,7 +118,6 @@ export default {
       let m = this.pubList.sort(function(a, b) {
         return b.usage - a.usage;
       })
-      console.log(m)
       return this.pubList
     }
   },
@@ -342,11 +338,8 @@ export default {
           me.reset = false
         })
       }
-      console.log(me.selectedFilters)
       if (me.selectedFilters) {
-        console.log("found filter")
         if (me.selectedFilters.integration) {
-          console.log("intefgration filter")
           let g = this.barQuery.filter('integration', null, true).then(res => {
             this.barQuery = res;
             me.reset = false
@@ -354,7 +347,6 @@ export default {
           me.selectedFilters.integration = null
         }
         if (me.selectedFilters.market) {
-          console.log("market filter")
           let g = this.barQuery.filter('market', null, true).then(res => {
             this.barQuery = res;
             me.reset = false
@@ -422,13 +414,10 @@ export default {
       }
     },
     listActivity (rd) {
-      console.log(rd)
       const j = this.pubList
       this.pubList = null
 
-
       this.pubList = j.map(pl => {
-        console.log(pl)
         if (pl.publisher === rd) {
           if (!pl.clicked) {
             pl.clicked = true
@@ -438,21 +427,17 @@ export default {
         }
         return pl
       })
-      console.log(this.pubList)
     },
     checkClicked (rd) {
       if (this.clicked[rd]) {
-        console.log("yee")
         return true
       } else {
-        console.log("nah")
         return false
       }
     },
     filterClass(f, el) {
       let txg = 'filter-el'
       if (this.selectedFilters) {
-        console.log(el)
         if (el.rel_percent < 0.2) {
           txg += ' empty'
         } else if (el.rel_percent >= 0.2 && el.rel_percent < 0.8) {
@@ -469,35 +454,33 @@ export default {
       if (!me.selectedCell) {
         me.selectedCell = cell.id
         me.reset = true
+        let g = this.barQuery.filter("pub", cell.id, true).then(res => {
+          this.barQuery = res;
+        })
       }
       else {
         me.selectedCell = null
         me.reset = false
+        let g = this.barQuery.filter("pub", null).then(res => {
+          this.barQuery = res;
+        })
       }
-      let g = this.barQuery.filter("pub", cell.id, true).then(res => {
-        this.barQuery = res;
-      })
     },
     filterClicked (filter, item) {
       var me = this
-//      if (!me.selectedCell) {
-//        me.selectedCell = cell.id
-//      }
-//      else {
-//        me.selectedCell = null
-//      }
       if (!this.selectedFilters[filter]) {
         this.selectedFilters[filter] = item
         me.reset = true
+        let g = this.barQuery.filter(filter, item, true).then(res => {
+          this.barQuery = res;
+        })
       } else {
         this.selectedFilters[filter] = null
         me.reset = false
+        let g = this.barQuery.filter(filter, null).then(res => {
+          this.barQuery = res;
+        })
       }
-      console.log(this.selectedFilters)
-
-      let g = this.barQuery.filter(filter, item, true).then(res => {
-        this.barQuery = res;
-      })
     },
     pandemonium () {
       var me = this
@@ -652,16 +635,18 @@ export default {
               let keep = true
               console.log(x)
               if (me.selectedFilters.market) {
-                console.log(me.selectedFilters)
-                console.log(me.x)
                 if (me.selectedFilters.market !== x.key[2]) {
                   keep = false
                 }
               }
               if (me.selectedFilters.integration) {
-                console.log(me.selectedFilters)
-                console.log(me.x)
                 if (me.selectedFilters.integration !== x.key[1]) {
+                  keep = false
+                }
+              }
+              if (me.selectedCell) {
+                console.log(me.selectedCell)
+                if (me.selectedCell !== x.key[0]) {
                   keep = false
                 }
               }

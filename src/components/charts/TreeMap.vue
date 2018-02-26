@@ -51,12 +51,10 @@ export default {
   watch: {
     treeData(newTree) {
       console.log(this.treeData)
-      if (!this.selected) {
         this.clearChart()
         this.etl()
         this.renderChart()
         this.renderChart()
-      }
     }
   },
   mounted () {
