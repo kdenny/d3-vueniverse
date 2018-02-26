@@ -4,22 +4,31 @@
     <div class="row" style="height: 560px">
       <div class="col-md-3">
         <h3>Publishers by Usage Frequency</h3>
+        <h4 v-if="universeSize > 1">Avg Usage Per Publisher: <span class="stat-number">{{ stats.avgUsage }}</span> custom fields</h4>
+        <h4 v-if="universeSize == 1">{{ pubList[0].publisher }} Usage: <span class="stat-number">{{ stats.avgUsage }}</span> custom fields</h4>
         <ul>
-          <li style="font-size: 18pt; margin-top: 5px;">Avg Usage Per Publisher: <span class="stat-number">{{ stats.avgUsage }}</span> custom fields</li>
+          <li style="font-size: 18pt; margin-top: 5px;" ></li>
+          <li style="font-size: 18pt; margin-top: 5px;" v-if="universeSize == 1"></li>
         </ul>
-        <publisher_usage :width="width" :height="height" :margin="margin2" v-if="usageByPub"
-                   :xVar="xVar2" :yVar="yVar2"
-                   :apiLoc="apiLoc" :chartData="usageByPub.data" :xScale="usageByPub.xScale"
-                   v-on:barClicked="binBarClicked"
-                   :selectedBar="selectedBar2"
-                   style="display: block; position: absolute; z-index: 2; margin-top: 25px; margin-left: 75px;"/>
+        <!--<publisher_usage :width="width" :height="height" :margin="margin2" v-if="usageByPub"-->
+                   <!--:xVar="xVar2" :yVar="yVar2"-->
+                   <!--:apiLoc="apiLoc" :chartData="usageByPub.data" :xScale="usageByPub.xScale"-->
+                   <!--v-on:barClicked="binBarClicked"-->
+                   <!--:selectedBar="selectedBar2"-->
+                   <!--style="display: block; position: absolute; z-index: 2; margin-top: 25px; margin-left: 75px;"/>-->
+        <publisher_dot :width="width" :height="height" :margin="margin2" v-if="usageByPub"
+                         :xVar="xVar2" :yVar="yVar2"
+                         :apiLoc="apiLoc" :chartData="usageByPub.data" :xScale="usageByPub.xScale"
+                         v-on:barClicked="binBarClicked"
+                         :selectedBar="selectedBar2"
+                         style="display: block; position: absolute; z-index: 2; margin-top: 25px; margin-left: 75px;"/>
       </div>
       <div class="col-md-6">
         <h3>Usage Scope</h3>
         <div class="span" style="font-size: 18px; font-weight: bold; margin-top: 20px;"> {{ universeSize }} out of {{ stats.totalPublishers }} publishers selected <span class="reset" v-if="reset" v-on:click="doReset()">(reset)</span></div>
         <ul class="big-stats">
           <li class="big-stat">Total Custom Fields created: <span class="stat-number">{{ stats.totalUsage }}</span></li>
-          <li class="big-stat">Total Views to Custom Fields page: <span class="stat-number">{{ stats.totalViews }}</span></li>
+          <!--<li class="big-stat">Total Views to Custom Fields page: <span class="stat-number">{{ stats.totalViews }}</span></li>-->
           <li class="big-stat">Publishers using feature: {{ stats.totalPublishers }} / {{ stats.globalPublishers }} <span class="stat-number">({{ stats.adoptionRate }}%)</span></li>
         </ul>
         <scale_chart :width="width3" :height="height3" :margin="margin3"
@@ -28,6 +37,8 @@
 
       <div class="col-md-3">
         <h3>Usage over Time</h3>
+        <h4 v-if="universeSize > 1">for {{ universeSize }} publishers</h4>
+        <h4 v-if="universeSize == 1">for {{ pubList[0].publisher }} </h4>
         <month_bar :width="width" :height="height" :margin="margin2" v-if="usageByMonth"
         :xVar="xVar" :yVar="yVar"
         :apiLoc="apiLoc" :chartData="usageByMonth.data" :xScale="usageByMonth.xScale"
@@ -101,6 +112,7 @@
   import TreeMap from './charts/TreeMap.vue'
   import MonthBar from './charts/MonthBar.vue'
   import PublisherUsageBar from './charts/PublisherUsageBar.vue'
+  import PublisherUsageDot from './charts/PublisherUsageDot.vue'
   import BootstrapTable from './charts/BootstrapTable.vue'
   import ScaleChart from './charts/ScaleChart.vue'
   import * as featureData from './fake_data.js'
@@ -110,6 +122,7 @@ export default {
     TreeMap,
     month_bar: MonthBar,
     publisher_usage: PublisherUsageBar,
+    publisher_dot: PublisherUsageDot,
     bootstrap_table: BootstrapTable,
     scale_chart: ScaleChart
   },

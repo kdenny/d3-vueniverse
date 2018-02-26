@@ -152,6 +152,7 @@ export default {
 
   .active {
     fill: orange;
+    cursor: pointer;
   }
   .axis-text {
     font-size: 12pt;
