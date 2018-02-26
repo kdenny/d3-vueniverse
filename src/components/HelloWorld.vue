@@ -1,27 +1,26 @@
 <template>
   <div class="hello">
-    <div class="row" style="height: 625px">
+    <div class="row" style="height: 560px">
 
       <div class="col-md-3">
         <h3>Publishers by Usage Frequency</h3>
         <ul>
-          <li>Avg Use for Publisher: {{ stats.avgUsage }} custom fields</li>
+          <li style="font-size: 18pt; margin-top: 5px;">Avg Usage Per Publisher: <span class="stat-number">{{ stats.avgUsage }}</span> custom fields</li>
         </ul>
         <publisher_usage :width="width" :height="height" :margin="margin2" v-if="usageByPub"
                    :xVar="xVar2" :yVar="yVar2"
                    :apiLoc="apiLoc" :chartData="usageByPub.data" :xScale="usageByPub.xScale"
                    v-on:barClicked="binBarClicked"
                    :selectedBar="selectedBar2"
-                   style="display: block; position: absolute; background-color: wheat; z-index: 2; margin-top: 75px; margin-left: 75px;"/>
+                   style="display: block; position: absolute; z-index: 2; margin-top: 25px; margin-left: 75px;"/>
       </div>
-
       <div class="col-md-6">
         <h3>Usage Scope</h3>
         <div class="span" style="font-size: 18px; font-weight: bold; margin-top: 20px;"> {{ universeSize }} out of {{ stats.totalPublishers }} publishers selected</div>
         <ul class="big-stats">
-          <li class="big-stat">Total Custom Fields created: {{ stats.totalUsage }}</li>
-          <li class="big-stat">Total Views to Custom Fields page: {{ stats.totalViews }}</li>
-          <li class="big-stat">Publishers using feature: {{ stats.totalPublishers }} / {{ stats.globalPublishers }} ({{ stats.adoptionRate }}%)</li>
+          <li class="big-stat">Total Custom Fields created: <span class="stat-number">{{ stats.totalUsage }}</span></li>
+          <li class="big-stat">Total Views to Custom Fields page: <span class="stat-number">{{ stats.totalViews }}</span></li>
+          <li class="big-stat">Publishers using feature: {{ stats.totalPublishers }} / {{ stats.globalPublishers }} <span class="stat-number">({{ stats.adoptionRate }}%)</span></li>
         </ul>
         <scale_chart :width="width3" :height="height3" :margin="margin3"
                    style="display: block; z-index: 2; margin-left: 50px;"/>
@@ -34,17 +33,17 @@
         :apiLoc="apiLoc" :chartData="usageByMonth.data" :xScale="usageByMonth.xScale"
         v-on:barClicked="monthBarClicked"
         :selectedBar="selectedBar"
-        style="display: block; position: absolute; background-color: wheat; z-index: 2; margin-top: 75px; margin-left: 75px;"/>
+        style="display: block; position: absolute; z-index: 2; margin-top: 55px; margin-left: 25px;"/>
       </div>
     </div>
 
-    <div class="row" v-if="tableData" style="margin-top: 25px">
+    <div class="row" v-if="tableData" style="margin-top: 5px">
 
       <div class="col-md-3">
         <h3>Publisher Markets</h3>
         <div v-if="marketData">
-          <ul>
-            <li v-for="mh in marketData" style="display: block; height: 55px;"><span class="filter-el" v-on:click="filterClicked('market',mh.key)">{{ mh.key }} &nbsp; {{ mh.rel_percent }}</span></li>
+          <ul style="margin-top: 30px">
+            <li v-for="mh in marketData" style="display: inline-block; height: 55px;"><span :class="filterClass('market',mh)" v-on:click="filterClicked('market',mh.key)">{{ mh.key }} &nbsp; {{ mh.rel_percent }}</span></li>
           </ul>
         </div>
 
@@ -54,7 +53,8 @@
       </div>
 
       <div class="col-md-6">
-        <table class="table" v-if="pubList">
+        <h3>Publisher Activity</h3>
+        <table class="table" v-if="pubList" style="margin-top: 40px">
           <thead>
           <tr>
             <th v-for="tf in pubHeaders" class="table-head-row">{{ tf }}</th>
@@ -62,9 +62,9 @@
           </tr>
           </thead>
           <tbody>
-            <tr v-for="rowd in pubList">
+            <tr v-for="rowd in pubList" class="pub-data">
               <!--<td v-for="tg in tableFields">{{ rowd[tg.name] }}</td>-->
-              <td>{{ rowd.publisher }}</td>
+              <td><strong>{{ rowd.publisher }}</strong></td>
               <td>{{ rowd.usage }}</td>
               <td style="width: 15%"><button class="btn-primary" v-on:click="listActivity(rowd.publisher)">Show Activity</button>
                 <div v-if="rowd.clicked" style="height: 45px">
@@ -81,8 +81,8 @@
       <div class="col-md-3">
         <h3>Publisher Integration Types</h3>
         <div v-if="integrationData">
-          <ul>
-            <li v-for="ig in integrationData" style="display: block; height: 55px;"><span class="filter-el" v-on:click="filterClicked('integration',ig.key)">{{ ig.key }} &nbsp; {{ ig.rel_percent }}</span></li>
+          <ul style="margin-top: 30px;">
+            <li v-for="ig in integrationData" style="display: block; height: 55px;"><span :class="filterClass('integration',ig)" v-on:click="filterClicked('integration',ig.key)">{{ ig.key }} &nbsp; {{ ig.rel_percent }}</span></li>
           </ul>
         </div>
       </div>
@@ -121,11 +121,11 @@ export default {
       msg: 'Welcome to Your Vue.js App',
       tdata: {},
       width: 450,
-      width3: 450,
-      height3: 75,
+      width3: 500,
+      height3: 85,
       height: 400,
       margin: {top: 50, right: 10, bottom: 100, left: 0},
-      margin2: {top: 50, right: 10, bottom: 100, left: 80},
+      margin2: {top: 15, right: 10, bottom: 100, left: 80},
       margin3: {top: 0, right: 10, bottom: 10, left: 10},
       xVar: "key",
       yVar: "usage",
@@ -392,6 +392,21 @@ export default {
         return false
       }
     },
+    filterClass(f, el) {
+      let txg = 'filter-el'
+      if (this.selectedFilters) {
+        console.log(el)
+        if (el.rel_percent < 0.2) {
+          txg += ' empty'
+        } else if (el.rel_percent >= 0.2 && el.rel_percent < 0.8) {
+          txg += ' partial'
+        } else {
+          txg += ' full'
+        }
+
+      }
+      return txg
+    },
     cellClicked (cell) {
       var me = this
       if (!me.selectedCell) {
@@ -538,33 +553,62 @@ export default {
       }).then(function (res) {
           let h = res.data
           let grp2 = {}
+          me.stats.totalUsage = 0
           me.rawTree = []
           me.pubList = []
           let xd = h.map(x => {
             console.log(x)
+            x.usage = me.binUsage(x.value.sumUsage.sum)
             if (me.selectedBar2) {
               if (x.usage === me.selectedBar2) {
                 let j = {name: x.key[0], value: x.value.sumUsage.sum}
                 console.log(j)
                 me.rawTree.push(j)
                 let mc = {publisher: x.key[0], usage: x.value.sumUsage.sum, clicked: false}
-                me.pubList.push(mc)
+                if (grp2[x.usage]) {
+                  grp2[x.usage] += 1
+                } else {
+                  grp2[x.usage] = 1
+                }
               }
-            }
-            else {
+            } else if (me.selectedBar) {
+              console.log(x)
+              if (x.value.sumUsage.sum !== 0) {
+                let j = {name: x.key[0], value: x.value.sumUsage.sum}
+                me.rawTree.push(j)
+                let mc = {publisher: x.key[0], usage: x.value.sumUsage.sum, clicked: false}
+                me.pubList.push(mc)
+                me.stats.totalUsage += x.value.sumUsage.sum
+                if (grp2[x.usage]) {
+                  grp2[x.usage] += 1
+                } else {
+                  grp2[x.usage] = 1
+                }
+              }
+            } else {
               let keep = true
               console.log(x)
               if (me.selectedFilters.market) {
+                console.log(me.selectedFilters)
+                console.log(me.x)
                 if (me.selectedFilters.market !== x.key[2]) {
                   keep = false
                 }
               }
               if (me.selectedFilters.integration) {
+                console.log(me.selectedFilters)
+                console.log(me.x)
                 if (me.selectedFilters.integration !== x.key[1]) {
                   keep = false
                 }
               }
               if (keep) {
+                if (grp2[x.usage]) {
+                  grp2[x.usage] += 1
+                } else {
+                  grp2[x.usage] = 1
+                }
+                me.stats.totalUsage += x.value.sumUsage.sum
                 let j = {name: x.key[0], value: x.value.sumUsage.sum}
                 console.log(j)
                 me.rawTree.push(j)
@@ -580,15 +624,11 @@ export default {
               }
 
             }
-            x.usage = me.binUsage(x.value.sumUsage.sum)
-            if (grp2[x.usage]) {
-              grp2[x.usage] += 1
-            } else {
-              grp2[x.usage] = 1
-            }
             return x
           })
-
+//          me.stats.totalPublishers = me.rawTree.length
+          me.stats.adoptionRate = Math.round((me.stats.totalPublishers / me.stats.globalPublishers) * 1000) / 10
+          me.stats.avgUsage = me.stats.totalUsage / me.rawTree.length
           let xScale = ['None','1-2','3-5','6-10','10-20','20+']
           let odata = []
 
@@ -654,6 +694,32 @@ a {
   padding: 10px;
   margin-top: 10px;
   cursor: pointer;
+}
+
+.empty {
+   background-color: #F0FFFF;
+  opacity: .7;
+  text-color: black;
+ }
+
+.partial {
+  background-color: #5F9EA0;
+  opacity: .5;
+  text-color: black;
+}
+
+.full {
+  background-color: #5F9EA0;
+  text-color: white;
+}
+
+.pub-data {
+  font-size: 14pt;
+}
+
+.stat-number {
+  font-weight: bold;
+  font-size: 24pt;
 }
 
 
