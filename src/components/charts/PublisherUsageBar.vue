@@ -101,16 +101,24 @@ export default {
       me.svg.selectAll("bar")
         .data(me.chartData)
         .enter().append("rect")
-        .attr("class", "bar")
+        .attr("class", function(d) {
+          if (d.key === me.selectedBar) {
+            return "active"
+          }
+          else {
+            return "bar"
+          }
+        })
         .on("click", function(d) {
           console.log(d)
-          console.log(d3.select(this))
+          console.log(me.selectedBar)
           if (d3.select(this).attr("class") =='bar') {
             d3.select(this).attr("class", "active")
           }
           else {
             d3.select(this).attr("class", "bar")
           }
+
           me.barClicked(d)
         })
         .attr("x", function(d) {
@@ -125,6 +133,7 @@ export default {
       this.$emit('barClicked', bar)
     },
     clearChart: function() {
+      console.log("Removing")
       this.svg.selectAll('g').remove()
       this.svg.selectAll('rect').remove()
     }

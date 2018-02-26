@@ -57,6 +57,7 @@ export default {
   },
   watch: {
     chartData(newTree) {
+      console.log(newTree)
       console.log(this.chartData)
       this.clearChart()
 //      this.etl()
@@ -101,10 +102,18 @@ export default {
       me.svg.selectAll("bar")
         .data(me.chartData)
         .enter().append("rect")
-        .attr("class", "bar")
+        .attr("class", function(d) {
+          if (d.key === me.selectedBar) {
+            return "active"
+          }
+          else {
+            return "bar"
+          }
+        })
         .on("click", function(d) {
           console.log(d)
           console.log(d3.select(this))
+//          d3.select(this).attr("class", "active")
           if (d3.select(this).attr("class") =='bar') {
             d3.select(this).attr("class", "active")
           }

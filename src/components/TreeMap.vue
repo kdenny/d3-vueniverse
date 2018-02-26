@@ -1,7 +1,7 @@
 <template>
   <!-- eslint-disable-next-line vue/max-attributes-per-line -->
   <div v-if="treeData">
-    <svg width="850" height="550"></svg>
+    <svg width="375" height="400"></svg>
   </div>
 
 </template>
@@ -50,6 +50,7 @@ export default {
   props: ['treeData'],
   watch: {
     treeData(newTree) {
+      console.log(this.treeData)
       if (!this.selected) {
         this.clearChart()
         this.etl()
@@ -150,6 +151,7 @@ export default {
     etl () {
       var me = this
       let g = this.treeData
+      console.log(g)
       let td = {
         children: [
         ]
@@ -165,18 +167,18 @@ export default {
         }
         let ccolor = me.colors[co]
         let j = {
-          id: dg.key,
-          name: dg.key,
+          id: dg.name,
+          name: dg.name,
           children: [
             {
-              count: dg.value.sumPageviews.sum,
-              id: dg.key,
-              name: dg.key,
+              count: dg.value,
+              id: dg.name,
+              name: dg.name,
               color: ccolor
             }
           ]
         }
-        if (dg.value.sumPageviews.sum > 500000 && dg.key != 'US Homepage' && dg.value.count > 0) {
+        if (dg.value > 0) {
           td.children.push(j)
           co++
         }
