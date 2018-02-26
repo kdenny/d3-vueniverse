@@ -224,14 +224,23 @@ export default {
     },
     binBarClicked (bar) {
       console.log(bar)
-      this.rawTree = null
-      let g = this.barQuery.filter("month", bar.key, true).then(res => {
+      var me = this
+      console.log(me.pubUsageBins[bar.key])
+      let bin = null
+      if (me.pubUsageBins[bar.key].length == 1) {
+        bin = me.pubUsageBins[bar.key][0]
+      }
+      else {
+        bin = me.pubUsageBins[bar.key]
+      }
+      let g = this.barQuery.filter("pub", bin, true).then(res => {
         console.log(res)
         this.barQuery = res;
       })
     },
     monthBarClicked (bar) {
-      console.log(bar)
+      console.log(bar.key)
+//      this.usageByMonth = null
       let g = this.barQuery.filter("month", bar.key, true).then(res => {
         console.log(res)
         this.barQuery = res;
@@ -247,7 +256,7 @@ export default {
         groupBy: 'month',
         select: {
           $count: true, // Count the number of records
-          sumUsage: { // Create a custom 'quantity' column
+          sumU: { // Create a custom 'quantity' column
             $sum: 'usage' // Sum the quantity column
           }
         },
@@ -258,7 +267,7 @@ export default {
           console.log(res.data)
           const g = res.data
           let gd = g.map(u => {
-            u.usage = u.value.sumUsage.sum
+            u.usage = u.value.sumU.sum
             return u
           })
           me.usageByMonth = {xScale: ['2017-10', '2017-11', '2017-12', '2018-01', '2018-02'], data: gd}

@@ -60,7 +60,7 @@ export default {
       this.clearChart()
 //      this.etl()
 //      this.renderChart()
-//      this.drawChart()
+      this.drawChart()
     }
   },
   props: ['width', 'height', 'margin', 'apiLoc', 'xVar', 'xScale', 'yVar', 'chartData', 'selectedBar'],
@@ -98,7 +98,7 @@ export default {
         .text("Conversions");
 
       me.svg.selectAll("bar")
-        .data(data)
+        .data(me.chartData)
         .enter().append("rect")
         .attr("class", "bar")
         .on("click", function(d) {
@@ -124,6 +124,7 @@ export default {
     },
     clearChart: function() {
       this.svg.selectAll('g').remove()
+      this.svg.selectAll('rect').remove()
     }
   }
 }
