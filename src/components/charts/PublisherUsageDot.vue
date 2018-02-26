@@ -24,6 +24,15 @@ Links:
 
   export default {
     mounted: function() {
+      console.log(this.chartData)
+      console.log(this.dataset)
+      this.dataset = this.chartData.map(u => {
+        console.log(u)
+        u.group = u.key
+        u.category = 'Cat 1'
+        console.log(u)
+        return u
+      })
       var flags = [], unique_categories = [], unique_groups=[], l = this.dataset.length, i;
       for( i=0; i<l; i++) {
         if( flags[this.dataset[i].category]) continue;
@@ -163,6 +172,7 @@ Links:
 //          {group: "20+", category: "Cat 5", count: 5},
 //          {group: "20+", category: "Cat 6", count: 3},
         ],
+        dataset2: null,
         timeScale: ['None','1-2','3-5','6-10','10-20','20+']
       }
     },
