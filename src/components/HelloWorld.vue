@@ -1,7 +1,7 @@
 <template>
   <div class="hello">
+    <h1 style="margin-bottom: 25px;">Feature Analytics Dashboard</h1>
     <div class="row" style="height: 560px">
-
       <div class="col-md-3">
         <h3>Publishers by Usage Frequency</h3>
         <ul>
@@ -16,7 +16,7 @@
       </div>
       <div class="col-md-6">
         <h3>Usage Scope</h3>
-        <div class="span" style="font-size: 18px; font-weight: bold; margin-top: 20px;"> {{ universeSize }} out of {{ stats.totalPublishers }} publishers selected</div>
+        <div class="span" style="font-size: 18px; font-weight: bold; margin-top: 20px;"> {{ universeSize }} out of {{ stats.totalPublishers }} publishers selected <span class="reset" v-if="reset" v-on:click="doReset()">(reset)</span></div>
         <ul class="big-stats">
           <li class="big-stat">Total Custom Fields created: <span class="stat-number">{{ stats.totalUsage }}</span></li>
           <li class="big-stat">Total Views to Custom Fields page: <span class="stat-number">{{ stats.totalViews }}</span></li>
@@ -62,12 +62,12 @@
           </tr>
           </thead>
           <tbody>
-            <tr v-for="rowd in pubList" class="pub-data">
+            <tr v-for="rowd in tableData" class="pub-data">
               <!--<td v-for="tg in tableFields">{{ rowd[tg.name] }}</td>-->
               <td><strong>{{ rowd.publisher }}</strong></td>
               <td>{{ rowd.usage }}</td>
-              <td style="width: 15%"><button class="btn-primary" v-on:click="listActivity(rowd.publisher)">Show Activity</button>
-                <div v-if="rowd.clicked" style="height: 45px">
+              <td style="width: 35%"><button class="btn-primary" v-on:click="listActivity(rowd.publisher)">Show Activity</button>
+                <div v-if="rowd.clicked" style="height: 125px;">
                   Display all fields created here
                 </div>
                 <div v-if="!rowd.clicked" style="height: 10px">
@@ -116,6 +116,15 @@ export default {
     bootstrap_table: BootstrapTable,
     scale_chart: ScaleChart
   },
+  computed: {
+    tableData() {
+      let m = this.pubList.sort(function(a, b) {
+        return b.usage - a.usage;
+      })
+      console.log(m)
+      return this.pubList
+    }
+  },
   data () {
     return {
       msg: 'Welcome to Your Vue.js App',
@@ -142,6 +151,7 @@ export default {
       selectedBar2: null,
       tableHeaders: null,
       selectedCell: null,
+      reset: false,
       formattedData: [],
       stats: {
         totalViews: 107,
@@ -160,7 +170,6 @@ export default {
       marketData: null,
       pubIntegrations: {},
       integrationData: null,
-      tableData: null,
       selectedFilters: {
         integration: null,
         market: null
@@ -301,7 +310,7 @@ export default {
         .then(function(universe) {
           var dim2 = myUniverse.column.find('month').dimension
           let oi = dim2.top(500)
-          me.tableData = oi
+//          me.tableData = oi
           me.tableHeaders = me.fData.headers
           me.universeSize = oi.length / (me.timeScale.length - 1)
         })
@@ -310,6 +319,50 @@ export default {
 
   },
   methods: {
+    doReset () {
+      var me = this
+      if (me.selectedBar2) {
+        me.selectedBar2 = null
+        let g = me.barQuery.filter("pub", null, true).then(res => {
+          me.barQuery = res;
+          me.reset = false
+        })
+      }
+      if (me.selectedBar) {
+        me.selectedBar = null
+        let g = me.barQuery.filter("month", null, true).then(res => {
+          me.barQuery = res;
+          me.reset = false
+        })
+      }
+      if (me.selectedCell) {
+        me.selectedCell = null
+        let g = me.barQuery.filter("pub", null, true).then(res => {
+          me.barQuery = res;
+          me.reset = false
+        })
+      }
+      console.log(me.selectedFilters)
+      if (me.selectedFilters) {
+        console.log("found filter")
+        if (me.selectedFilters.integration) {
+          console.log("intefgration filter")
+          let g = this.barQuery.filter('integration', null, true).then(res => {
+            this.barQuery = res;
+            me.reset = false
+          })
+          me.selectedFilters.integration = null
+        }
+        if (me.selectedFilters.market) {
+          console.log("market filter")
+          let g = this.barQuery.filter('market', null, true).then(res => {
+            this.barQuery = res;
+            me.reset = false
+          })
+          me.selectedFilters.market = null
+        }
+      }
+    },
     binUsage (d) {
       if (d == 0) {
         return 'None'
@@ -339,12 +392,14 @@ export default {
         let g = this.barQuery.filter("pub", bin).then(res => {
           this.barQuery = res;
         })
+        me.reset = true
       }
       else {
         me.selectedBar2 = null
-        let g = this.barQuery.filter("pub", null, true).then(res => {
+        let g = this.barQuery.filter("pub", null).then(res => {
           this.barQuery = res;
         })
+        me.reset = false
       }
 
     },
@@ -355,12 +410,14 @@ export default {
         me.selectedBar = bar.key
         let g = this.barQuery.filter("month", fg, true).then(res => {
           this.barQuery = res;
+          me.reset = true
         })
       }
       else {
         me.selectedBar = null
         let g = this.barQuery.filter("month", null, true).then(res => {
           this.barQuery = res;
+          me.reset = false
         })
       }
     },
@@ -411,9 +468,11 @@ export default {
       var me = this
       if (!me.selectedCell) {
         me.selectedCell = cell.id
+        me.reset = true
       }
       else {
         me.selectedCell = null
+        me.reset = false
       }
       let g = this.barQuery.filter("pub", cell.id, true).then(res => {
         this.barQuery = res;
@@ -429,8 +488,10 @@ export default {
 //      }
       if (!this.selectedFilters[filter]) {
         this.selectedFilters[filter] = item
+        me.reset = true
       } else {
         this.selectedFilters[filter] = null
+        me.reset = false
       }
       console.log(this.selectedFilters)
 
@@ -441,7 +502,7 @@ export default {
     pandemonium () {
       var me = this
       console.log("Pandemonium")
-      me.tableData = null
+//      me.tableData = null
       me.usageByMonth = null
       me.usageByPub = null
       this.barQuery.query({
@@ -565,6 +626,8 @@ export default {
                 console.log(j)
                 me.rawTree.push(j)
                 let mc = {publisher: x.key[0], usage: x.value.sumUsage.sum, clicked: false}
+                me.pubList.push(mc)
+                me.stats.totalUsage += x.value.sumUsage.sum
                 if (grp2[x.usage]) {
                   grp2[x.usage] += 1
                 } else {
@@ -624,6 +687,7 @@ export default {
               }
 
             }
+            me.universeSize = me.pubList.length
             return x
           })
 //          me.stats.totalPublishers = me.rawTree.length
@@ -650,9 +714,8 @@ export default {
           .then(function(universe) {
             var dim2 = myUniverse.column.find('month').dimension
             let oi = dim2.top(500)
-            me.tableData = oi
+//            me.tableData = oi
             me.tableHeaders = me.fData.headers
-            me.universeSize = oi.length / (me.timeScale.length - 1)
           })
       })
 
@@ -693,6 +756,7 @@ a {
   border-radius: 15px;
   padding: 10px;
   margin-top: 10px;
+  font-size: 16pt;
   cursor: pointer;
 }
 
@@ -720,6 +784,11 @@ a {
 .stat-number {
   font-weight: bold;
   font-size: 24pt;
+}
+
+.reset {
+  cursor: pointer;
+  color: blue;
 }
 
 
