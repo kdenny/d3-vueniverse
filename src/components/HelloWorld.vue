@@ -1,12 +1,10 @@
 <template>
   <div class="hello">
-    <!--<h1>{{ msg }}</h1>-->
-    <!--<h2>Essential Links</h2>-->
-    <div class="span" style="font-size: 18px; font-weight: bold;"> {{ universeSize }} out of {{ stats.totalPublishers }} publishers selected</div>
     <div class="row" style="height: 625px">
+
       <div class="col-md-3">
         <h3>Publishers by Usage Frequency</h3>
-        <ul class="big-stats">
+        <ul>
           <li>Avg Use for Publisher: {{ stats.avgUsage }} custom fields</li>
         </ul>
         <publisher_usage :width="width" :height="height" :margin="margin2" v-if="usageByPub"
@@ -16,15 +14,19 @@
                    :selectedBar="selectedBar2"
                    style="display: block; position: absolute; background-color: wheat; z-index: 2; margin-top: 75px; margin-left: 75px;"/>
       </div>
+
       <div class="col-md-6">
         <h3>Usage Scope</h3>
+        <div class="span" style="font-size: 18px; font-weight: bold; margin-top: 20px;"> {{ universeSize }} out of {{ stats.totalPublishers }} publishers selected</div>
         <ul class="big-stats">
-          <li class="big-stat">Total Views to Custom Fields page: {{ stats.totalViews }}</li>
           <li class="big-stat">Total Custom Fields created: {{ stats.totalUsage }}</li>
+          <li class="big-stat">Total Views to Custom Fields page: {{ stats.totalViews }}</li>
           <li class="big-stat">Publishers using feature: {{ stats.totalPublishers }} / {{ stats.globalPublishers }} ({{ stats.adoptionRate }}%)</li>
         </ul>
-
+        <scale_chart :width="width3" :height="height3" :margin="margin3"
+                   style="display: block; z-index: 2; margin-left: 50px;"/>
       </div>
+
       <div class="col-md-3">
         <h3>Usage over Time</h3>
         <month_bar :width="width" :height="height" :margin="margin2" v-if="usageByMonth"
@@ -35,32 +37,56 @@
         style="display: block; position: absolute; background-color: wheat; z-index: 2; margin-top: 75px; margin-left: 75px;"/>
       </div>
     </div>
+
     <div class="row" v-if="tableData" style="margin-top: 25px">
+
       <div class="col-md-3">
         <h3>Publisher Markets</h3>
         <div v-if="marketData">
           <ul>
-            <li v-for="mh in marketData" style="display: block; height: 35px;">{{ mh.key }} - {{ mh.rel_percent }}</li>
+            <li v-for="mh in marketData" style="display: block; height: 55px;"><span class="filter-el" v-on:click="filterClicked('market',mh.key)">{{ mh.key }} &nbsp; {{ mh.rel_percent }}</span></li>
           </ul>
         </div>
+
         <div v-if="rawTree">
           <tree-map :treeData="rawTree" v-on:cellClicked="cellClicked"></tree-map>
         </div>
       </div>
+
       <div class="col-md-6">
-        <bootstrap_table
-          :tableFields="tableHeaders"
-          :tableRows="tableData"
-        ></bootstrap_table>
+        <table class="table" v-if="pubList">
+          <thead>
+          <tr>
+            <th v-for="tf in pubHeaders" class="table-head-row">{{ tf }}</th>
+            <th class="table-head-row"></th>
+          </tr>
+          </thead>
+          <tbody>
+            <tr v-for="rowd in pubList">
+              <!--<td v-for="tg in tableFields">{{ rowd[tg.name] }}</td>-->
+              <td>{{ rowd.publisher }}</td>
+              <td>{{ rowd.usage }}</td>
+              <td style="width: 15%"><button class="btn-primary" v-on:click="listActivity(rowd.publisher)">Show Activity</button>
+                <div v-if="rowd.clicked" style="height: 45px">
+                  Display all fields created here
+                </div>
+                <div v-if="!rowd.clicked" style="height: 10px">
+                </div>
+              </td>
+            </tr>
+          </tbody>
+        </table>
       </div>
+
       <div class="col-md-3">
         <h3>Publisher Integration Types</h3>
         <div v-if="integrationData">
           <ul>
-            <li v-for="ig in integrationData" style="display: block; height: 35px;">{{ ig.key }} - {{ ig.rel_percent }}</li>
+            <li v-for="ig in integrationData" style="display: block; height: 55px;"><span class="filter-el" v-on:click="filterClicked('integration',ig.key)">{{ ig.key }} &nbsp; {{ ig.rel_percent }}</span></li>
           </ul>
         </div>
       </div>
+
     </div>
 
   </div>
@@ -77,6 +103,7 @@
   import MonthBar from './charts/MonthBar.vue'
   import PublisherUsageBar from './charts/PublisherUsageBar.vue'
   import BootstrapTable from './BootstrapTable.vue'
+  import ScaleChart from './charts/ScaleChart.vue'
   import * as fileData from './out.js'
   import * as featureData from './fake_data.js'
 export default {
@@ -86,22 +113,20 @@ export default {
     bar_chart: BarChart,
     month_bar: MonthBar,
     publisher_usage: PublisherUsageBar,
-    bootstrap_table: BootstrapTable
-  },
-  computed: {
-//    barData() {
-//      console.log(this.$store.getters)
-//      return this.$store.getters.treeData
-//    }
+    bootstrap_table: BootstrapTable,
+    scale_chart: ScaleChart
   },
   data () {
     return {
       msg: 'Welcome to Your Vue.js App',
       tdata: {},
       width: 450,
+      width3: 450,
+      height3: 75,
       height: 400,
       margin: {top: 50, right: 10, bottom: 100, left: 0},
       margin2: {top: 50, right: 10, bottom: 100, left: 80},
+      margin3: {top: 0, right: 10, bottom: 10, left: 10},
       xVar: "key",
       yVar: "usage",
       xVar2: "key",
@@ -109,7 +134,6 @@ export default {
       apiLoc: "http://nimbuscharts.pythonanywhere.com/sheets/1fVQ13aXacNsHOSIL85Jv1LTT9p3bao2kFh1mCEmsdPU/API_data/",
       chartData: null,
       treeData: {},
-      bdata: null,
       rawTree: null,
       myUniverse: null,
       currentUsageBin: [],
@@ -117,6 +141,7 @@ export default {
       selectedBar: null,
       selectedBar2: null,
       tableHeaders: null,
+      selectedCell: null,
       formattedData: [],
       stats: {
         totalViews: 107,
@@ -125,20 +150,22 @@ export default {
         avgUsage: null,
         globalPublishers: 147
       },
-      totalViews: 107,
-      totalUsage: 0,
-      totalPublishers: 0,
-      avgUsage: null,
+      pubList: null,
+      pubHeaders: ['publisher', 'usage'],
       usageByMonth: null,
       pubUsageBins: {},
       timeScale: ['None','1-2','3-5','6-10','10-20','20+'],
       pubMarkets: {},
+      clicked: {},
       marketData: null,
       pubIntegrations: {},
       integrationData: null,
       tableData: null,
+      selectedFilters: {
+        integration: null,
+        market: null
+      },
       usageByPub: null,
-      uData: fileData.contentData,
       fData: featureData.featureData.data,
       universeSize: null
     }
@@ -178,7 +205,8 @@ export default {
         })
 
 
-        myUniverse.query({ groupBy: 'pub',
+        myUniverse.query({
+          groupBy: 'pub',
           select: {
             $count: true,
             sumUsage: { // Create a custom 'quantity' column
@@ -188,14 +216,16 @@ export default {
           chart: 'bar',
           displayName: 'Content Age'
         }).then(function (res) {
-          console.log(res.data)
           let h = res.data
           let grp = {}
           me.rawTree = []
+          me.pubList = []
           let hd = h.map(u => {
-            console.log(u.key)
             let j = {name: u.key, value: u.value.sumUsage.sum}
             me.rawTree.push(j)
+            let mc = {publisher: u.key, usage: u.value.sumUsage.sum, clicked: false}
+            me.pubList.push(mc)
+            me.clicked[u.key] = false
             u.usage = me.binUsage(u.value.sumUsage.sum)
             if (grp[u.usage]) {
               grp[u.usage] += 1
@@ -238,16 +268,12 @@ export default {
           chart: 'bar',
           displayName: 'Usage by Market'
         }).then(function(res) {
-            console.log(res.data)
             let mk = res.data
-            console.log(mk)
             me.marketData = mk.map(hj => {
               me.pubMarkets[hj.key] = hj.value.count / (me.timeScale.length - 1)
               hj.rel_percent =  1
               return hj
             })
-          console.log(me.pubMarkets)
-          console.log(me.marketData)
             return res.universe
           })
 
@@ -259,16 +285,12 @@ export default {
           chart: 'bar',
           displayName: 'Usage by Market'
         }).then(function(res) {
-          console.log(res.data)
           let mk = res.data
-          console.log(mk)
           me.integrationData = mk.map(hj => {
             me.pubIntegrations[hj.key] = hj.value.count / (me.timeScale.length - 1)
             hj.rel_percent =  1
             return hj
           })
-          console.log(me.pubIntegrations)
-          console.log(me.integrationData)
           return res.universe
         })
 
@@ -279,10 +301,8 @@ export default {
         .then(function(universe) {
           var dim2 = myUniverse.column.find('month').dimension
           let oi = dim2.top(500)
-          console.log(dim2)
           me.tableData = oi
           me.tableHeaders = me.fData.headers
-          console.log(oi.length)
           me.universeSize = oi.length / (me.timeScale.length - 1)
         })
     })
@@ -306,7 +326,6 @@ export default {
       }
     },
     binBarClicked (bar) {
-      console.log(bar)
       var me = this
       let bin = null
       if (me.pubUsageBins[bar.key].length == 1) {
@@ -315,7 +334,6 @@ export default {
       else {
         bin = me.pubUsageBins[bar.key]
       }
-      me.currentUsageBin = bin
       if (!me.selectedBar2) {
         me.selectedBar2 = bar.key
         let g = this.barQuery.filter("pub", bin).then(res => {
@@ -332,38 +350,85 @@ export default {
     },
     monthBarClicked (bar) {
       var me = this
-      console.log(bar.key)
       const fg = bar.key
       if (!me.selectedBar) {
         me.selectedBar = bar.key
         let g = this.barQuery.filter("month", fg, true).then(res => {
-          console.log(res)
           this.barQuery = res;
         })
       }
       else {
         me.selectedBar = null
         let g = this.barQuery.filter("month", null, true).then(res => {
-          console.log(res)
           this.barQuery = res;
         })
       }
     },
+    listActivity (rd) {
+      console.log(rd)
+      const j = this.pubList
+      this.pubList = null
+
+
+      this.pubList = j.map(pl => {
+        console.log(pl)
+        if (pl.publisher === rd) {
+          if (!pl.clicked) {
+            pl.clicked = true
+          } else {
+            pl.clicked = false
+          }
+        }
+        return pl
+      })
+      console.log(this.pubList)
+    },
+    checkClicked (rd) {
+      if (this.clicked[rd]) {
+        console.log("yee")
+        return true
+      } else {
+        console.log("nah")
+        return false
+      }
+    },
     cellClicked (cell) {
-//      console.log(cell)
-//      this.bdata = null
+      var me = this
+      if (!me.selectedCell) {
+        me.selectedCell = cell.id
+      }
+      else {
+        me.selectedCell = null
+      }
       let g = this.barQuery.filter("pub", cell.id, true).then(res => {
         this.barQuery = res;
       })
     },
+    filterClicked (filter, item) {
+      var me = this
+//      if (!me.selectedCell) {
+//        me.selectedCell = cell.id
+//      }
+//      else {
+//        me.selectedCell = null
+//      }
+      if (!this.selectedFilters[filter]) {
+        this.selectedFilters[filter] = item
+      } else {
+        this.selectedFilters[filter] = null
+      }
+      console.log(this.selectedFilters)
+
+      let g = this.barQuery.filter(filter, item, true).then(res => {
+        this.barQuery = res;
+      })
+    },
     pandemonium () {
-//      this.bdata = null
       var me = this
       console.log("Pandemonium")
       me.tableData = null
       me.usageByMonth = null
       me.usageByPub = null
-      console.log(this.barQuery)
       this.barQuery.query({
         groupBy: 'month',
         select: {
@@ -377,7 +442,6 @@ export default {
           let yd = []
 
           g.map(yu => {
-            console.log(yu)
             yu.sage = yu.value.sumUsage.sum
             yd.push(yu)
           })
@@ -389,13 +453,9 @@ export default {
           this.barQuery = res.universe
           return res.universe
         })
-//        .then(function(universe) {
-//          console.log(universe)
-//          universe
-//      })
 
       this.barQuery.query({
-        groupBy: ['market'],
+        groupBy: 'market',
         select: {
           $count: true,
           sumUsage: { // Create a custom 'quantity' column
@@ -418,16 +478,19 @@ export default {
             if (u.value.sumUsage.sum === 0) {
               u.count = 0
             }
+            if (me.selectedFilters.market) {
+              if (me.selectedFilters.market !== u.key) {
+                u.count = 0
+              }
+            }
             u.rel_percent = u.count / me.pubMarkets[u.key]
             return u
           })
-          console.log(me.marketData)
-          console.log(me.pubMarkets)
           return res.universe
         })
 
       this.barQuery.query({
-        groupBy: ['integration'],
+        groupBy: 'integration',
         select: {
           $count: true,
           sumUsage: { // Create a custom 'quantity' column
@@ -437,10 +500,9 @@ export default {
         chart: 'bar',
         displayName: 'Usage by Market'
       }).then(function(res) {
-        console.log(res.data)
         let mk2 = res.data
-        console.log(mk2)
         me.integrationData = mk2.map(u2 => {
+          console.log(u2)
           if (!me.selectedBar) {
             u2.count = u2.value.count / (me.timeScale.length - 1)
           }
@@ -450,15 +512,21 @@ export default {
           if (u2.value.sumUsage.sum === 0) {
             u2.count = 0
           }
+          if (me.selectedFilters.integration) {
+            console.log(u2)
+            if (me.selectedFilters.integration !== u2.key) {
+              u2.count = 0
+            }
+          }
           u2.rel_percent = u2.count / me.pubIntegrations[u2.key]
           return u2
         })
-        console.log(me.pubIntegrations)
-        console.log(me.integrationData)
+        this.barQuery = res.universe
         return res.universe
       })
 
-      this.barQuery.query({ groupBy: 'pub',
+      this.barQuery.query({
+        groupBy: ['pub','integration','market'],
         select: {
           $count: true,
           sumUsage: { // Create a custom 'quantity' column
@@ -468,13 +536,50 @@ export default {
         chart: 'bar',
         displayName: 'Content Age'
       }).then(function (res) {
-        console.log(res)
           let h = res.data
           let grp2 = {}
           me.rawTree = []
+          me.pubList = []
           let xd = h.map(x => {
-            let j = {name: x.key, value: x.value.sumUsage.sum}
-            me.rawTree.push(j)
+            console.log(x)
+            if (me.selectedBar2) {
+              if (x.usage === me.selectedBar2) {
+                let j = {name: x.key[0], value: x.value.sumUsage.sum}
+                console.log(j)
+                me.rawTree.push(j)
+                let mc = {publisher: x.key[0], usage: x.value.sumUsage.sum, clicked: false}
+                me.pubList.push(mc)
+              }
+            }
+            else {
+              let keep = true
+              console.log(x)
+              if (me.selectedFilters.market) {
+                if (me.selectedFilters.market !== x.key[2]) {
+                  keep = false
+                }
+              }
+              if (me.selectedFilters.integration) {
+                if (me.selectedFilters.integration !== x.key[1]) {
+                  keep = false
+                }
+              }
+              if (keep) {
+                let j = {name: x.key[0], value: x.value.sumUsage.sum}
+                console.log(j)
+                me.rawTree.push(j)
+                j = {publisher: x.key[0], usage: x.value.sumUsage.sum, clicked: false}
+                if (me.selectedCell) {
+                  if (me.selectedCell === x.key[0]) {
+                    me.pubList.push(j)
+                  }
+                }
+                else {
+                  me.pubList.push(j)
+                }
+              }
+
+            }
             x.usage = me.binUsage(x.value.sumUsage.sum)
             if (grp2[x.usage]) {
               grp2[x.usage] += 1
@@ -497,18 +602,16 @@ export default {
             }
           })
           me.yVar2 = 'ct'
-          console.log(odata)
           me.usageByPub = {data: odata, xScale: xScale, filter: true}
+//          this.barQuery = res.universe
           return res.universe
         }).then(function(myUniverse) {
         myUniverse.column('month')
           .then(function(universe) {
             var dim2 = myUniverse.column.find('month').dimension
             let oi = dim2.top(500)
-            console.log(dim2)
             me.tableData = oi
             me.tableHeaders = me.fData.headers
-            console.log(oi.length)
             me.universeSize = oi.length / (me.timeScale.length - 1)
           })
       })
@@ -535,11 +638,22 @@ li {
 a {
   color: #42b983;
 }
+.big-stats {
+  margin-top: 50px;
+}
 .big-stat {
   margin-top: 30px;
   display: block;
   height: 70px;
   font-size: 20pt;
+}
+
+.filter-el {
+  border: 1px solid black;
+  border-radius: 15px;
+  padding: 10px;
+  margin-top: 10px;
+  cursor: pointer;
 }
 
 
