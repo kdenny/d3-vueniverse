@@ -38,7 +38,7 @@ Links:
       }
 
 //      var groupScale = d3.scale.ordinal().domain(unique_groups).rangePoints([0, unique_groups.length - 1]);
-      var groupScale = d3.scaleBand().domain(unique_groups).range([0, unique_groups.length - 1])
+      var groupScale = d3.scaleBand().domain(unique_groups).range([0, unique_groups.length])
       var categoryScale = d3.scaleBand().domain(unique_categories).range([0, unique_categories.length]);
 
       var color = d3.scaleOrdinal(d3.schemeCategory20);;
@@ -46,29 +46,30 @@ Links:
       var el = d3.select(this.$el).select("#svg");
       console.log(this.chartData)
 
-      var	margin = {top: 20, right: 50, bottom: 50, left: 150},
-        width = 700 - margin.left - margin.right,
-        height = 400 - margin.top - margin.bottom;
+      var	margin = {top: 55, right: 50, bottom: 75, left: 150},
+        width = 750 - margin.left - margin.right,
+        height = 465 - margin.top - margin.bottom;
 
       // Set the ranges
 //      var	xScale = d3.scale.linear().range([50, width]);
       var	xScale = d3.scaleLinear().range([50, width]);
-      var	yScale = d3.scaleLinear().range([height, 50]);
+      var	yScale = d3.scaleLinear().range([height, 25]);
 
       this.chartWidth = this.width - this.margin.left - this.margin.right;
       this.chartHeight = this.height - this.margin.top - this.margin.bottom;
 
 
-      this.x = d3.scaleBand().rangeRound([0, this.chartWidth], 5)
+      this.x = d3.scaleBand().rangeRound([20, this.chartWidth], 5)
 
-      this.y = d3.scaleLinear().range([this.chartHeight, 0])
-
+      this.y = d3.scaleLinear().range([height, 0])
+      var me = this
       var xAxis = d3.axisBottom(xScale);
       var yAxis = d3.axisLeft(yScale)
         .tickFormat(function (d) {
-        return unique_groups[d];
-      })
-        .ticks(unique_groups.length);
+          console.log(d)
+          return unique_groups[d];
+        })
+        .ticks(5);
 
       var result = this.dataset.reduce(function(res, obj) {
         if (!(obj.group in res))
@@ -133,35 +134,36 @@ Links:
         .attr("class", "circleArray")
         .append("circle")
         .style("fill",function(d){return color(d.category);})
-        .attr("r", 5)
-        .attr("cx", function(d,i) {return xScale(d.x); })
+        .attr("r", 10)
+        .attr("cx", function(d,i) {return xScale(d.x) + 12; })
         .attr("cy", function(d,i) { return yScale(d.y); });
 
     },
     data() {
       return {
         dataset: [
-          {group: "Grp 1", category: "Cat 1", count: 1},
-          {group: "Grp 1", category: "Cat 2", count: 3},
-          {group: "Grp 1", category: "Cat 3", count: 5},
-          {group: "Grp 1", category: "Cat 4", count: 4},
-          {group: "Grp 2", category: "Cat 1", count: 6},
-          {group: "Grp 2", category: "Cat 2", count: 2},
-          {group: "Grp 3", category: "Cat 1", count: 5},
-          {group: "Grp 3", category: "Cat 2", count: 4},
-          {group: "Grp 4", category: "Cat 1", count: 1},
-          {group: "Grp 4", category: "Cat 3", count: 4},
-          {group: "Grp 4", category: "Cat 5", count: 2},
-          {group: "Grp 5", category: "Cat 2", count: 6},
-          {group: "Grp 5", category: "Cat 4", count: 2},
-          {group: "Grp 5", category: "Cat 5", count: 1},
-          {group: "Grp 6", category: "Cat 1", count: 7},
-          {group: "Grp 6", category: "Cat 2", count: 3},
-          {group: "Grp 6", category: "Cat 3", count: 2},
-          {group: "Grp 6", category: "Cat 4", count: 1},
-          {group: "Grp 6", category: "Cat 5", count: 5},
-          {group: "Grp 6", category: "Cat 6", count: 3},
-        ]
+          {group: "None", category: "Cat 1", count: 1},
+//          {group: "None", category: "Cat 2", count: 3},
+//          {group: "None", category: "Cat 3", count: 5},
+//          {group: "None", category: "Cat 4", count: 4},
+          {group: "1-2", category: "Cat 1", count: 6},
+//          {group: "1-2", category: "Cat 2", count: 2},
+          {group: "3-5", category: "Cat 1", count: 5},
+//          {group: "3-5", category: "Cat 2", count: 4},
+          {group: "6-10", category: "Cat 1", count: 1},
+//          {group: "6-10", category: "Cat 3", count: 4},
+//          {group: "6-10", category: "Cat 5", count: 2},
+          {group: "10-20", category: "Cat 1", count: 6},
+//          {group: "10-20", category: "Cat 4", count: 2},
+//          {group: "10-20", category: "Cat 5", count: 1},
+          {group: "20+", category: "Cat 1", count: 7},
+//          {group: "20+", category: "Cat 2", count: 3},
+//          {group: "20+", category: "Cat 3", count: 2},
+//          {group: "20+", category: "Cat 4", count: 1},
+//          {group: "20+", category: "Cat 5", count: 5},
+//          {group: "20+", category: "Cat 6", count: 3},
+        ],
+        timeScale: ['None','1-2','3-5','6-10','10-20','20+']
       }
     },
     watch: {
@@ -188,7 +190,7 @@ Links:
 
         me.svg.append("g")
           .attr("class", "x axis")
-          .attr("transform", "translate(0," + me.chartHeight + ")")
+          .attr("transform", "translate(0," + height + ")")
           .call(me.xAxis)
           .selectAll("text")
           .style("text-anchor", "end")
@@ -237,7 +239,7 @@ Links:
           })
           .attr("width", (me.x.bandwidth()-5))
           .attr("y", function(d) { return me.y(d[me.yVar]); })
-          .attr("height", function(d) { return me.chartHeight - me.y(d[me.yVar]); });
+          .attr("height", function(d) { return height - me.y(d[me.yVar]); });
 
       },
       barClicked: function(bar) {

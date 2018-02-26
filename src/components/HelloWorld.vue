@@ -21,7 +21,7 @@
                          :apiLoc="apiLoc" :chartData="usageByPub.data" :xScale="usageByPub.xScale"
                          v-on:barClicked="binBarClicked"
                          :selectedBar="selectedBar2"
-                         style="display: block; position: absolute; z-index: 2; margin-top: 25px; margin-left: 75px;"/>
+                         style="display: block; position: absolute; z-index: 2; margin-top: 25px; margin-left: -10px;"/>
       </div>
       <div class="col-md-6">
         <h3>Usage Scope</h3>
